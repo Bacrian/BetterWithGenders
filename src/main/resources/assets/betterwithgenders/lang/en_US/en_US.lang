@@ -1,0 +1,16 @@
+key.bwgenders.opengui=Open Gender GUI
+options.category.bwgenders=Better With Genders
+gui.container.gender=Gender Menu
+gui.container.jiggle=Jiggle Physics Menu
+gui.gender.button=Gender
+gui.gender.male=§3Male
+gui.gender.female=§6Female
+gui.gender.other=§5Other
+gui.done=Done!
+gui.gender.jiggle.open=Modify Physics
+gui.gender.slider=Breast Size
+gui.gender.jiggle.direction=Breast Separation
+gui.gender.jiggle.amount=Jiggle Amount
+gui.gender.jiggle.armor=Armor Physics
+options.on=ON
+options.off=OFF
