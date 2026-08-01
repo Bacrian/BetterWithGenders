@@ -1,5 +1,0 @@
-* text=auto eol=lf
-gradlew text eol=lf
-*.bat text eol=crlf
-*.cmd text eol=crlf
-gradle-wrapper.jar -text -diff -merge -filter
