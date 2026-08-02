@@ -38,6 +38,18 @@ public abstract class PlayerGenderMixin implements GenderData {
 		this.bwg$jiggleDirection = angle;
 	}
 
+	// Breast Separation
+	@Unique
+	private float bwg$breastSeparation = 0;
+	@Override
+	public float bwg$getBreastSeparation() {
+		return this.bwg$breastSeparation;
+	}
+	@Override
+	public void bwg$setBreastSeparation(float separation) {
+		this.bwg$breastSeparation = separation;
+	}
+
 	// Jiggle Amount
 	@Unique
 	private float bwg$jiggleAmount = 0.5F;
@@ -135,12 +147,17 @@ public abstract class PlayerGenderMixin implements GenderData {
 	@Override
 	public void bwg$setGender(Gender g) {
 		this.betterwithgenders$gender = g;
+		// mark entity additional data dirty so server-side tracking can send NBT updates
+		net.minecraft.core.entity.Entity entity = (net.minecraft.core.entity.Entity)(Object)this;
+		entity.additionalDataChanged = true;
+		entity.sendAdditionalData = true;
 	}
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
 	private void bwg$saveGender(CompoundTag tag, CallbackInfo ci) {
 		tag.putString("BWG_Gender", this.betterwithgenders$gender.name());
 		tag.putFloat("BWG_BreastSize", this.bwg$breastSize);
+		tag.putFloat("BWG_BreastSeparation", this.bwg$breastSeparation);
 		tag.putFloat("BWG_JiggleDirection", this.bwg$jiggleDirection);
 		tag.putFloat("BWG_JiggleAmount", this.bwg$jiggleAmount);
 		tag.putBoolean("BWG_JiggleEnabled", this.bwg$jiggleEnabled);
@@ -154,6 +171,9 @@ public abstract class PlayerGenderMixin implements GenderData {
 		}
 		if (tag.containsKey("BWG_BreastSize")) {
 			this.bwg$breastSize = tag.getFloat("BWG_BreastSize");
+		}
+		if (tag.containsKey("BWG_BreastSeparation")) {
+			this.bwg$breastSeparation = tag.getFloat("BWG_BreastSeparation");
 		}
 		if (tag.containsKey("BWG_JiggleDirection")) {
 			this.bwg$jiggleDirection = tag.getFloat("BWG_JiggleDirection");

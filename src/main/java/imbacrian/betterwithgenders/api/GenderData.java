@@ -16,6 +16,9 @@ public interface GenderData {
 	float bwg$getJiggleDirection();
 	void bwg$setJiggleDirection(float angle);
 
+	float bwg$getBreastSeparation();
+	void bwg$setBreastSeparation(float separation);
+
 	boolean bwg$isJiggleWithArmor();
 	void bwg$setJiggleWithArmor(boolean value);
 

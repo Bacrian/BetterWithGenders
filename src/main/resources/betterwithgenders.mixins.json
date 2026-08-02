@@ -6,13 +6,17 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "GeometryCacheMixin"
+    "GeometryCacheMixin",
+    "PlayerGenderMixin"
   ],
   "client": [
     "MinecraftMixin",
     "MobRendererBipedArmoredMixin",
     "MobRendererPlayerMixin",
     "OptionsPagesMixin",
-    "PlayerGenderMixin"
+    "PacketHandlerClientMixin"
+  ],
+  "server": [
+    "PacketHandlerServerMixin"
   ]
 }
