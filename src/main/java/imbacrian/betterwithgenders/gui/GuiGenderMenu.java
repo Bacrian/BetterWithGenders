@@ -9,13 +9,12 @@ import net.minecraft.client.gui.SliderElement;
 import net.minecraft.client.render.renderer.GLRenderer;
 import net.minecraft.core.lang.I18n;
 import org.lwjgl.input.Keyboard;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import net.minecraft.core.net.packet.PacketCustomPayload;
 
 public class GuiGenderMenu extends Screen {
+
+	private static final float SEPARATION_MIN = 0.0F;
+	private static final float SEPARATION_MAX = 0.075F;
 
 	private int guiWidth = 242;
 	private int guiHeight = 140;
@@ -39,31 +38,30 @@ public class GuiGenderMenu extends Screen {
 		this.buttons.clear();
 
 		// Gender button on right panel
-		this.buttons.add(new ButtonElement(0, this.guiLeft + 135, this.guiTop + 10, 100, 20,
+		this.buttons.add(new ButtonElement(0, this.guiLeft + 100, this.guiTop + 10, 130, 20,
 		I18n.getInstance().translateKey("gui.gender.button") + ": "
 		+ I18n.getInstance().translateKey("gui.gender." + data.bwg$getGender().name().toLowerCase())));
 
 		// Breasts Slider
-		this.breastSlider = new SliderElement(1, this.guiLeft + 135, this.guiTop + 35, 100, 20,
+		this.breastSlider = new SliderElement(1, this.guiLeft + 100, this.guiTop + 35, 130, 20,
 			I18n.getInstance().translateKey("gui.gender.slider"), data.bwg$getBreastSize());
 		this.buttons.add(this.breastSlider);
 		this.breastSlider.enabled = data.bwg$getGender() != Gender.MALE;
 		this.lastBreastValue = data.bwg$getBreastSize();
 
 		// Breast Separation Slider
-
-		this.separationSlider = new SliderElement(2, this.guiLeft + 135, this.guiTop + 60, 100, 20,
+		this.separationSlider = new SliderElement(2, this.guiLeft + 100, this.guiTop + 60, 130, 20,
 			I18n.getInstance().translateKey("gui.gender.separation.slider"), data.bwg$getBreastSeparation());
 		this.buttons.add(this.separationSlider);
-		this.separationSlider.enabled = data.bwg$getGender() != Gender.MALE;
+		this.separationSlider.enabled = data.bwg$getGender() != Gender.MALE && data.bwg$isIndividualPhysics();
 		this.lastSeparationValue = data.bwg$getBreastSeparation();
 
 		// Jiggle Physics Menu
-		this.buttons.add(new ButtonElement(3, this.guiLeft + 135, this.guiTop + 85, 100, 20,
+		this.buttons.add(new ButtonElement(3, this.guiLeft + 100, this.guiTop + 85, 130, 20,
 			I18n.getInstance().translateKey("gui.gender.jiggle.open")));
 
 		// Save changes
-		this.buttons.add(new ButtonElement(4, this.guiLeft + 135, this.guiTop + 110, 100, 20, I18n.getInstance().translateKey("gui.done")));
+		this.buttons.add(new ButtonElement(4, this.guiLeft + 100, this.guiTop + 110, 130, 20, I18n.getInstance().translateKey("gui.done")));
 	}
 
 	@Override
@@ -73,7 +71,7 @@ public class GuiGenderMenu extends Screen {
 			GenderData player = (GenderData) this.mc.thePlayer;
 			Gender next = player.bwg$getGender().next();
 			player.bwg$setGender(next);
-			this.sendGenderPacket(next, player.bwg$getBreastSize());
+			this.sendGenderPacket(next, player.bwg$getBreastSize(), player.bwg$getBreastSeparation(), player.bwg$getJiggleDirection());
 
 			ButtonElement genderButton = this.buttons.get(0);
 			genderButton.displayString = I18n.getInstance().translateKey("gui.gender.button")
@@ -101,15 +99,24 @@ public class GuiGenderMenu extends Screen {
 
 		super.render(mx, my, renderPartialTicks);
 
+		GenderData data = (GenderData) this.mc.thePlayer;
+
 		if (this.breastSlider.sliderValue != lastBreastValue) {
-			GenderData player = (GenderData) this.mc.thePlayer;
-			player.bwg$setBreastSize((float) this.breastSlider.sliderValue);
+
+			data.bwg$setBreastSize((float) this.breastSlider.sliderValue);
 			this.lastBreastValue = this.breastSlider.sliderValue;
-			this.sendGenderPacket(player.bwg$getGender(), player.bwg$getBreastSize());
+			this.sendGenderPacket(data.bwg$getGender(), data.bwg$getBreastSize(), data.bwg$getBreastSeparation(), data.bwg$getJiggleDirection());
+		}
+
+		if (this.separationSlider.sliderValue != lastSeparationValue) {
+			float separation = (float) (SEPARATION_MIN + this.separationSlider.sliderValue * (SEPARATION_MAX - SEPARATION_MIN));
+			data.bwg$setBreastSeparation(separation);
+			this.lastSeparationValue = this.separationSlider.sliderValue;
+			this.sendGenderPacket(data.bwg$getGender(), data.bwg$getBreastSize(), data.bwg$getBreastSeparation(), data.bwg$getJiggleDirection());
 		}
 	}
 
-	private void sendGenderPacket(Gender gender, float breastSize) {
+	private void sendGenderPacket(Gender gender, float breastSize, float breastSeparation, float jiggleDirection) {
 		if (this.mc.getSendQueue() == null) return;
 		try {
 			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -117,6 +124,8 @@ public class GuiGenderMenu extends Screen {
 			dos.writeInt(this.mc.thePlayer.id);
 			dos.writeUTF(gender.name());
 			dos.writeFloat(breastSize);
+			dos.writeFloat(breastSeparation);
+			dos.writeFloat(jiggleDirection);
 			dos.flush();
 			this.mc.getSendQueue().addToSendQueue(new PacketCustomPayload("BWG:Gender", baos.toByteArray()));
 			dos.close();

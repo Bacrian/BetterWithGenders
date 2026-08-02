@@ -31,6 +31,15 @@ public interface GenderData {
 	double bwg$getLastWobble();
 	void bwg$setLastWobble(double value);
 
+	double bwg$getLastImpactWobble();
+	void bwg$setLastImpactWobble(double value);
+
+	double bwg$getLastTurnWobble();
+	void bwg$setLastTurnWobble(double value);
+
+	double bwg$getLastImpulseTick();
+	void bwg$setLastImpulseTick(double value);
+
 	boolean bwg$isWasOnGround();
 	void bwg$setWasOnGround(boolean value);
 
@@ -39,4 +48,13 @@ public interface GenderData {
 
 	double bwg$getFallImpulse();
 	void bwg$setFallImpulse(double value);
+
+	float bwg$getPrevYaw();
+	void bwg$setPrevYaw(float value);
+
+	double bwg$getTurnWobble();
+	void bwg$setTurnWobble(double value);
+
+	boolean bwg$isIndividualPhysics();
+	void bwg$setIndividualPhysics(boolean value);
 }

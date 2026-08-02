@@ -31,10 +31,11 @@ public class PacketHandlerClientMixin {
             if (packetEntityTagData.tag != null && packetEntityTagData.tag.containsKey("BWG_Gender")) {
                 String g = packetEntityTagData.tag.getString("BWG_Gender");
                 float b = packetEntityTagData.tag.containsKey("BWG_BreastSize") ? packetEntityTagData.tag.getFloat("BWG_BreastSize") : -1.0F;
+				float bs = packetEntityTagData.tag.containsKey("BWG_BreastSeparation") ? packetEntityTagData.tag.getFloat("BWG_BreastSeparation") : -1.0F;
                 float jd = packetEntityTagData.tag.containsKey("BWG_JiggleDirection") ? packetEntityTagData.tag.getFloat("BWG_JiggleDirection") : -1.0F;
                 float ja = packetEntityTagData.tag.containsKey("BWG_JiggleAmount") ? packetEntityTagData.tag.getFloat("BWG_JiggleAmount") : -1.0F;
-                LOGGER.info("BWG: Client received BWG NBT for entity {} gender={} breastSize={} jiggleDirection={} jiggleAmount={}", 
-                    packetEntityTagData.entityId, g, b, jd, ja);
+                LOGGER.info("BWG: Client received BWG NBT for entity {} gender={} breastSize={} breastSeparation={} jiggleDirection={} jiggleAmount={}",
+                    packetEntityTagData.entityId, g, b, bs, jd, ja);
 
                 // Apply NBT to the entity (calls readAdditionalSaveData) so mixin fields update
                 try {

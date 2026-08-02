@@ -1,31 +1,42 @@
 package imbacrian.betterwithgenders.render;
 
-import imbacrian.betterwithgenders.BwGenders;
 import imbacrian.betterwithgenders.api.Gender;
 import imbacrian.betterwithgenders.api.GenderData;
-import net.minecraft.client.render.EntityRendererDispatcher;
-import net.minecraft.client.render.entity.EntityRenderer;
-import org.spongepowered.asm.mixin.Unique;
-import org.useless.dragonfly.data.entity.mojang.EntityGeometryMojangData;
 import org.useless.dragonfly.models.entity.BoneTransform;
 import org.useless.dragonfly.models.entity.StaticEntityModel;
 
 public class MammaryModel {
 
-	public static void apply(StaticEntityModel model, GenderData data, double wobble) {
+	public static void apply(StaticEntityModel model, GenderData data, double walkWobble, double impactWobble, double turnWobble, boolean hasChestplate) {
 		boolean shown = data.bwg$getGender() == Gender.FEMALE || data.bwg$getGender() == Gender.OTHER;
-		double jiggleRot = data.bwg$isJiggleEnabled() ? wobble * data.bwg$getJiggleAmount() : 0.0;
-		applyPair(model, data, shown, jiggleRot, "breastLeft", "breastRight");
-		applyPair(model, data, shown, jiggleRot, "jacketBreastLeft", "jacketBreastRight");
+		boolean suppressMotion = hasChestplate && !data.bwg$isJiggleWithArmor();
+
+		double jiggleY = (data.bwg$isJiggleEnabled() && !suppressMotion) ? (walkWobble + turnWobble) * data.bwg$getJiggleAmount() : 0.0;
+		double jiggleX = (data.bwg$isJiggleEnabled() && !suppressMotion) ? impactWobble * data.bwg$getJiggleAmount() : 0.0;
+
+		applyPair(model, data, shown, jiggleY, jiggleX, "breastLeft", "breastRight");
+		applyPair(model, data, shown, jiggleY, jiggleX, "jacketBreastLeft", "jacketBreastRight");
 	}
 
-	public static void applyArmor(StaticEntityModel model, GenderData data, double wobble) {
+	public static void applyArmor(StaticEntityModel model, GenderData data, double walkWobble, double impactWobble, double turnWobble) {
 		boolean shown = data.bwg$getGender() == Gender.FEMALE || data.bwg$getGender() == Gender.OTHER;
-		double jiggleRot = shown && data.bwg$isJiggleEnabled() ? wobble * data.bwg$getJiggleAmount() : 0.0;
-		applyPair(model, data, shown, jiggleRot, "armorBreastLeft", "armorBreastRight");
+		double jiggleY = (data.bwg$isJiggleEnabled() && data.bwg$isJiggleWithArmor()) ? (walkWobble + turnWobble) * data.bwg$getJiggleAmount() : 0.0;
+		double jiggleX = (data.bwg$isJiggleEnabled() && data.bwg$isJiggleWithArmor()) ? impactWobble * data.bwg$getJiggleAmount() : 0.0;
+		applyPair(model, data, shown, jiggleY, jiggleX, "armorBreastLeft", "armorBreastRight");
 	}
 
-	private static void applyPair(StaticEntityModel model, GenderData data, boolean shown, double jiggleRot, String leftName, String rightName) {
+	public static void applyStatic(StaticEntityModel model, boolean shown, float size, String leftName, String rightName) {
+		BoneTransform left = model.getTransform(leftName);
+		BoneTransform right = model.getTransform(rightName);
+		if (left == null || right == null) return;
+		left.visible = shown;
+		right.visible = shown;
+		if (!shown) return;
+		left.scaleZ = size;
+		right.scaleZ = size;
+	}
+
+	private static void applyPair(StaticEntityModel model, GenderData data, boolean shown, double jiggleY, double jiggleX, String leftName, String rightName) {
 		BoneTransform left = model.getTransform(leftName);
 		BoneTransform right = model.getTransform(rightName);
 		if (left == null || right == null) return;
@@ -36,12 +47,33 @@ public class MammaryModel {
 		left.scaleZ = data.bwg$getBreastSize();
 		right.scaleZ = data.bwg$getBreastSize();
 
-		double baseRot = Math.toRadians(data.bwg$getJiggleDirection());
-		left.rotY = baseRot + jiggleRot;
-		right.rotY = -baseRot - jiggleRot;
+		if (data.bwg$isIndividualPhysics()) {
+			// Dual physics
+			double baseRot = Math.toRadians(data.bwg$getJiggleDirection());
 
-		double separation = data.bwg$getBreastSeparation()/2.0F;
-		left.posX = -separation;
-		right.posX = separation;
+			// Subtle random variation
+			double leftRandom = Math.sin((System.currentTimeMillis() / 500.0) + leftName.hashCode()) * 0.02;
+			double rightRandom = Math.sin((System.currentTimeMillis() / 500.0) + rightName.hashCode()) * 0.02;
+
+			left.rotY = baseRot + jiggleY + leftRandom;
+			right.rotY = -baseRot - jiggleY + rightRandom;
+
+			left.rotX = jiggleX + leftRandom * 0.5;
+			right.rotX = jiggleX + rightRandom * 0.5;
+
+			double separation = data.bwg$getBreastSeparation() * 2.0F;
+			left.posX = -separation;
+			right.posX = separation;
+		} else {
+			// Unified physics
+			left.rotY = jiggleY;
+			right.rotY = -jiggleY;
+
+			left.rotX = jiggleX;
+			right.rotX = jiggleX;
+
+			left.posX = 0.0F;
+			right.posX = 0.0F;
+		}
 	}
 }

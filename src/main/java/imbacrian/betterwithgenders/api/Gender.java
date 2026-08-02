@@ -1,7 +1,7 @@
 package imbacrian.betterwithgenders.api;
 
 public enum Gender {
-	MALE, FEMALE, OTHER; // lo que uses
+	MALE, FEMALE, OTHER;
 
 	public Gender next() {
 		Gender[] v = values();

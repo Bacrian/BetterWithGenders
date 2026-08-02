@@ -52,7 +52,7 @@ public abstract class PlayerGenderMixin implements GenderData {
 
 	// Jiggle Amount
 	@Unique
-	private float bwg$jiggleAmount = 0.5F;
+	private float bwg$jiggleAmount = 0.3F;
 	@Override
 	public float bwg$getJiggleAmount() {
 		return this.bwg$jiggleAmount;
@@ -135,6 +135,60 @@ public abstract class PlayerGenderMixin implements GenderData {
 	@Override
 	public void bwg$setFallImpulse(double value) { this.bwg$fallImpulse = value; }
 
+	// Impulse Tick
+	@Unique
+	private double bwg$lastImpulseTick = 0.0;
+
+	@Override
+	public double bwg$getLastImpulseTick() {
+		return this.bwg$lastImpulseTick;
+	}
+	@Override
+	public void bwg$setLastImpulseTick(double value) {
+		this.bwg$lastImpulseTick = value;
+	}
+
+	// Previous Yaw for turn detection
+	@Unique
+	private float bwg$prevYaw = 0.0F;
+	@Override
+	public float bwg$getPrevYaw() { return this.bwg$prevYaw; }
+	@Override
+	public void bwg$setPrevYaw(float value) { this.bwg$prevYaw = value; }
+
+	// Turn Wobble
+	@Unique
+	private double bwg$turnWobble = 0.0;
+	@Override
+	public double bwg$getTurnWobble() { return this.bwg$turnWobble; }
+	@Override
+	public void bwg$setTurnWobble(double value) { this.bwg$turnWobble = value; }
+
+	// Individual Physics Toggle
+	@Unique
+	private boolean bwg$individualPhysics = true;
+	@Override
+	public boolean bwg$isIndividualPhysics() { return this.bwg$individualPhysics; }
+	@Override
+	public void bwg$setIndividualPhysics(boolean value) { this.bwg$individualPhysics = value; }
+
+	// Wobble handlers
+
+	@Unique
+	private double bwg$lastImpactWobble = 0.0;
+	@Unique
+	private double bwg$lastTurnWobble = 0.0;
+
+	@Override
+	public double bwg$getLastImpactWobble() { return this.bwg$lastImpactWobble; }
+	@Override
+	public void bwg$setLastImpactWobble(double value) { this.bwg$lastImpactWobble = value; }
+
+	@Override
+	public double bwg$getLastTurnWobble() { return this.bwg$lastTurnWobble; }
+	@Override
+	public void bwg$setLastTurnWobble(double value) { this.bwg$lastTurnWobble = value; }
+
 	//Gender handling
 	@Unique
 	private Gender betterwithgenders$gender = Gender.MALE;
@@ -162,6 +216,9 @@ public abstract class PlayerGenderMixin implements GenderData {
 		tag.putFloat("BWG_JiggleAmount", this.bwg$jiggleAmount);
 		tag.putBoolean("BWG_JiggleEnabled", this.bwg$jiggleEnabled);
 		tag.putBoolean("BWG_JiggleWithArmor", this.bwg$jiggleWithArmor);
+		tag.putBoolean("BWG_IndividualPhysics", this.bwg$individualPhysics);
+		tag.putDouble("BWG_JiggleTimer", this.bwg$jiggleTimer);
+		tag.putDouble("BWG_FallImpulse", this.bwg$fallImpulse);
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -186,6 +243,15 @@ public abstract class PlayerGenderMixin implements GenderData {
 		}
 		if (tag.containsKey("BWG_JiggleWithArmor")) {
 			this.bwg$jiggleWithArmor = tag.getBoolean("BWG_JiggleWithArmor");
+		}
+		if (tag.containsKey("BWG_IndividualPhysics")) {
+			this.bwg$individualPhysics = tag.getBoolean("BWG_IndividualPhysics");
+		}
+		if (tag.containsKey("BWG_JiggleTimer")) {
+			this.bwg$jiggleTimer = tag.getDouble("BWG_JiggleTimer");
+		}
+		if (tag.containsKey("BWG_FallImpulse")) {
+			this.bwg$fallImpulse = tag.getDouble("BWG_FallImpulse");
 		}
 	}
 }
