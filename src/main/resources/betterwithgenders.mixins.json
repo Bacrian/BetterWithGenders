@@ -16,7 +16,8 @@
     "MobRendererBipedMixin",
     "MobRendererPlayerMixin",
     "OptionsPagesMixin",
-    "PacketHandlerClientMixin"
+    "PacketHandlerClientMixin",
+    "TileEntityRendererStatueMixin"
   ],
   "server": [
     "PacketHandlerServerMixin"
