@@ -3,7 +3,7 @@
 	"id": "betterwithgenders",
 	"version": "${version}",
 	"name": "Better With Genders",
-	"description": "This mod adds genders... Yeah, that's it. WARNING, janky physics. I'm still working on the physics I'm sorry!",
+	"description": "This mod adds genders... Yeah, that's it. Just beware, it has janky physics. I'm still working on the physics I'm sorry!",
 	"authors": [
 		"Bacrian / @imbacrian"
 	],
@@ -12,7 +12,7 @@
 		"sources": ""
 	},
 	"icon": "icon.png",
-	"license": "CC0-1.0",
+	"license": "GPL-3.0",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
