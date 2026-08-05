@@ -26,7 +26,7 @@
 		"fabricloader": ">=${fabricloader}",
 		"minecraft": "*",
 		"java": ">=${java}",
-		"bapilib": "*"
+		"bapilib": ">=1.0.1"
 	},
 	"suggests": {
 		"modmenu": ">=${modmenu}"
