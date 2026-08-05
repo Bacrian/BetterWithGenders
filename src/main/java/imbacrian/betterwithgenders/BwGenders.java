@@ -1,6 +1,9 @@
 package imbacrian.betterwithgenders;
 
+import imbacrian.betterwithgenders.client.BwgOptions;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import turniplabs.halplibe.HalpLibe;
@@ -23,6 +26,8 @@ public class BwGenders implements ModInitializer {
 	}
 
 	public void afterGameStart() {
-
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+			BwgOptions.init();
+		}
 	}
 }

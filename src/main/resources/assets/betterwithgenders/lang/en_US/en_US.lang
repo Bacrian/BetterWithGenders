@@ -1,6 +1,7 @@
 key.bwgenders.opengui=Open Gender GUI
 options.category.bwgenders=Better With Genders
 gui.container.gender=Gender Menu
+gui.container.statue_gender=Statue Gender Menu
 gui.container.jiggle=Jiggle Physics Menu
 gui.gender.button=Gender
 gui.gender.male=§3Male

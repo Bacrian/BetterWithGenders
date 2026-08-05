@@ -8,18 +8,20 @@
   "mixins": [
     "GeometryCacheMixin",
     "MobCustomBodyMixin",
-    "PlayerGenderMixin"
+    "PlayerGenderMixin",
+    "TileEntityStatueMixin"
   ],
   "client": [
+    "ItemPaintBrushMixin",
     "MinecraftMixin",
     "MobRendererBipedArmoredMixin",
     "MobRendererBipedMixin",
     "MobRendererPlayerMixin",
-    "OptionsPagesMixin",
     "PacketHandlerClientMixin",
     "TileEntityRendererStatueMixin"
   ],
   "server": [
-    "PacketHandlerServerMixin"
+    "PacketHandlerServerMixin",
+    "PlayerListMixin"
   ]
 }

@@ -2,6 +2,7 @@ package imbacrian.betterwithgenders.render;
 
 import imbacrian.betterwithgenders.api.Gender;
 import imbacrian.betterwithgenders.api.GenderData;
+import imbacrian.betterwithgenders.api.StatueGenderData;
 import org.useless.dragonfly.models.entity.BoneTransform;
 import org.useless.dragonfly.models.entity.StaticEntityModel;
 
@@ -34,6 +35,13 @@ public class MammaryModel {
 		if (!shown) return;
 		left.scaleZ = size;
 		right.scaleZ = size;
+	}
+
+	public static void applyStatue(StaticEntityModel model, StatueGenderData data) {
+		boolean shown = data.bwg$getGender() == Gender.FEMALE || data.bwg$getGender() == Gender.OTHER;
+		applyStatic(model, shown, data.bwg$getBreastSize(), "breastLeft", "breastRight");
+		applyStatic(model, shown, data.bwg$getBreastSize(), "jacketBreastLeft", "jacketBreastRight");
+		applyStatic(model, shown, data.bwg$getBreastSize(), "armorBreastLeft", "armorBreastRight");
 	}
 
 	private static void applyPair(StaticEntityModel model, GenderData data, boolean shown, double jiggleY, double jiggleX, String leftName, String rightName) {
