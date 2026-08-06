@@ -1,6 +1,6 @@
 ![Better With Genders Banner](https://cdn.modrinth.com/data/cached_images/3afdaf42999698f5859e540fdb5477a44741cab6.png)
 
-**REQUIRES [BAPILib 1.0.0](https://github.com/Bacrian/BAPILib)**
+**REQUIRES [BAPILib 1.0.1](https://github.com/Bacrian/BAPILib)**
 
 # 
 
