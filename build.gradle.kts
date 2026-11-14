@@ -22,6 +22,7 @@ loom {
 repositories {
     mavenCentral()
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
+	maven("https://maven.danygames2014.net/signalum") { name = "SignalumMavenMirror1" }
     maven("https://maven.thesignalumproject.net/infrastructure") { name = "SignalumMavenInfrastructure" }
     maven("https://maven.thesignalumproject.net/releases") { name = "SignalumMavenReleases" }
 	maven("https://maven.thesignalumproject.net/nightly") { name = "SignalumMavenNightly" }
@@ -38,8 +39,7 @@ dependencies {
 	implementation(libs.loader)
 	implementation(libs.halplibe) // If you do not need halplibe you can delete this line
 	implementation(project(":bapilib"))
-
-
+	include(project(":bapilib"))
 	// Only required at compilation
 	// provides documentation, can be removed if that isn't needed
 	compileOnly(libs.bundles.btaLwjgl)
@@ -92,7 +92,7 @@ tasks {
 		targetCompatibility = javaVersion.get().toString()
 		if (javaVersion.get() > 8) options.release = javaVersion
 	}
-	withType<UpdateDaemonJvm>().configureEach {
+	named<UpdateDaemonJvm>("updateDaemonJvm") {
 		languageVersion = libs.versions.gradleJava.map { JavaLanguageVersion.of(it.toInt()) }
 		vendor = JvmVendorSpec.ADOPTIUM
 	}
@@ -159,4 +159,8 @@ fun resolveLwjglNatives(): String { // Sourced from https://www.lwjgl.org/
 				throw Error("Unrecognized or unsupported platform. Please set \"lwjglNatives\" manually")
 		}
 	}
+}
+
+tasks.withType<JavaExec>().configureEach {
+	workingDir = layout.projectDirectory.dir("run").asFile
 }

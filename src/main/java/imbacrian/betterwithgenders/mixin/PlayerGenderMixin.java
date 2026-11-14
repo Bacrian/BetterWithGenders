@@ -3,6 +3,7 @@ package imbacrian.betterwithgenders.mixin;
 import com.mojang.nbt.tags.CompoundTag;
 import imbacrian.betterwithgenders.api.Gender;
 import imbacrian.betterwithgenders.api.GenderData;
+import imbacrian.betterwithgenders.physics.BreastPhysics;
 import net.minecraft.core.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -86,84 +87,6 @@ public abstract class PlayerGenderMixin implements GenderData {
 		this.bwg$jiggleWithArmor = value;
 	}
 
-	//Jiggle Timer
-	@Unique
-	private double bwg$jiggleTimer = 0.0;
-	@Unique
-	private long bwg$jiggleLastRenderTick = 0;
-	@Unique
-	private double bwg$lastWobble = 0;
-
-	@Override
-	public double bwg$getJiggleTimer() { return this.bwg$jiggleTimer; }
-	@Override
-	public void bwg$setJiggleTimer(double value) { this.bwg$jiggleTimer = value; }
-
-	@Override
-	public long bwg$getJiggleLastRenderTick() { return this.bwg$jiggleLastRenderTick; }
-	@Override
-	public void bwg$setJiggleLastRenderTick(long value) { this.bwg$jiggleLastRenderTick = value; }
-
-	@Override
-	public double bwg$getLastWobble() { return this.bwg$lastWobble; }
-	@Override
-	public void bwg$setLastWobble(double value) { this.bwg$lastWobble = value; }
-	//Yes, I'm aware it's long af.
-
-	// Checking for ground
-	@Unique
-	private boolean bwg$wasOnGround = true;
-	@Override
-	public boolean bwg$isWasOnGround() { return this.bwg$wasOnGround; }
-	@Override
-	public void bwg$setWasOnGround(boolean value) { this.bwg$wasOnGround = value; }
-
-	// Fall Speed
-	@Unique
-	private double bwg$prevFallSpeed = 0.0;
-	@Override
-	public double bwg$getPrevFallSpeed() { return this.bwg$prevFallSpeed; }
-	@Override
-	public void bwg$setPrevFallSpeed(double value) { this.bwg$prevFallSpeed = value; }
-
-	// Fall Impulse
-
-	@Unique
-	private double bwg$fallImpulse = 0.0;
-	@Override
-	public double bwg$getFallImpulse() { return this.bwg$fallImpulse; }
-	@Override
-	public void bwg$setFallImpulse(double value) { this.bwg$fallImpulse = value; }
-
-	// Impulse Tick
-	@Unique
-	private double bwg$lastImpulseTick = 0.0;
-
-	@Override
-	public double bwg$getLastImpulseTick() {
-		return this.bwg$lastImpulseTick;
-	}
-	@Override
-	public void bwg$setLastImpulseTick(double value) {
-		this.bwg$lastImpulseTick = value;
-	}
-
-	// Previous Yaw for turn detection
-	@Unique
-	private float bwg$prevYaw = 0.0F;
-	@Override
-	public float bwg$getPrevYaw() { return this.bwg$prevYaw; }
-	@Override
-	public void bwg$setPrevYaw(float value) { this.bwg$prevYaw = value; }
-
-	// Turn Wobble
-	@Unique
-	private double bwg$turnWobble = 0.0;
-	@Override
-	public double bwg$getTurnWobble() { return this.bwg$turnWobble; }
-	@Override
-	public void bwg$setTurnWobble(double value) { this.bwg$turnWobble = value; }
-
 	// Individual Physics Toggle
 	@Unique
 	private boolean bwg$individualPhysics = true;
@@ -172,22 +95,14 @@ public abstract class PlayerGenderMixin implements GenderData {
 	@Override
 	public void bwg$setIndividualPhysics(boolean value) { this.bwg$individualPhysics = value; }
 
-	// Wobble handlers
-
+	// Animation state. Created lazily so a dedicated server never allocates it.
 	@Unique
-	private double bwg$lastImpactWobble = 0.0;
-	@Unique
-	private double bwg$lastTurnWobble = 0.0;
-
+	private BreastPhysics bwg$physics;
 	@Override
-	public double bwg$getLastImpactWobble() { return this.bwg$lastImpactWobble; }
-	@Override
-	public void bwg$setLastImpactWobble(double value) { this.bwg$lastImpactWobble = value; }
-
-	@Override
-	public double bwg$getLastTurnWobble() { return this.bwg$lastTurnWobble; }
-	@Override
-	public void bwg$setLastTurnWobble(double value) { this.bwg$lastTurnWobble = value; }
+	public BreastPhysics bwg$getPhysics() {
+		if (this.bwg$physics == null) this.bwg$physics = new BreastPhysics();
+		return this.bwg$physics;
+	}
 
 	//Gender handling
 	@Unique
@@ -217,14 +132,19 @@ public abstract class PlayerGenderMixin implements GenderData {
 		tag.putBoolean("BWG_JiggleEnabled", this.bwg$jiggleEnabled);
 		tag.putBoolean("BWG_JiggleWithArmor", this.bwg$jiggleWithArmor);
 		tag.putBoolean("BWG_IndividualPhysics", this.bwg$individualPhysics);
-		tag.putDouble("BWG_JiggleTimer", this.bwg$jiggleTimer);
-		tag.putDouble("BWG_FallImpulse", this.bwg$fallImpulse);
+		// Animation state is deliberately NOT saved/synced: it is simulated locally by every client.
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	private void bwg$loadGender(CompoundTag tag, CallbackInfo ci) {
 		if (tag.containsKey("BWG_Gender")) {
-			this.betterwithgenders$gender = Gender.valueOf(tag.getString("BWG_Gender"));
+			try {
+				this.betterwithgenders$gender = Gender.valueOf(tag.getString("BWG_Gender"));
+			} catch (IllegalArgumentException ignored) {
+				// Unknown/legacy value in an old save: keep the current gender instead of crashing the load.
+			}
+			// The tracker only sends the NBT to players that start tracking when this flag is set.
+			((net.minecraft.core.entity.Entity) (Object) this).sendAdditionalData = true;
 		}
 		if (tag.containsKey("BWG_BreastSize")) {
 			this.bwg$breastSize = tag.getFloat("BWG_BreastSize");
@@ -246,12 +166,6 @@ public abstract class PlayerGenderMixin implements GenderData {
 		}
 		if (tag.containsKey("BWG_IndividualPhysics")) {
 			this.bwg$individualPhysics = tag.getBoolean("BWG_IndividualPhysics");
-		}
-		if (tag.containsKey("BWG_JiggleTimer")) {
-			this.bwg$jiggleTimer = tag.getDouble("BWG_JiggleTimer");
-		}
-		if (tag.containsKey("BWG_FallImpulse")) {
-			this.bwg$fallImpulse = tag.getDouble("BWG_FallImpulse");
 		}
 	}
 }

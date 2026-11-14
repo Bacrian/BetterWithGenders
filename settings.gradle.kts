@@ -36,6 +36,8 @@ pluginManagement {
 		return chosenRepository
 	}
 	repositories {
+		mavenCentral()
+		gradlePluginPortal()
 		maven(
 			repoUrlWithFallbacks(
 				listOf(
@@ -46,8 +48,6 @@ pluginManagement {
 			)
 		) { name = "Fabric" }
 		maven("https://maven.thesignalumproject.net/infrastructure") { name = "SignalumMavenInfrastructure" }
-		mavenCentral()
-		gradlePluginPortal()
 	}
 	val foojayResolverVersion = providers.gradleProperty("foojay_resolver_version")
 	plugins {
@@ -57,6 +57,5 @@ pluginManagement {
 plugins {
 	id("org.gradle.toolchains.foojay-resolver-convention")
 }
-
 include(":bapilib")
 project(":bapilib").projectDir = file("../BAPILib")

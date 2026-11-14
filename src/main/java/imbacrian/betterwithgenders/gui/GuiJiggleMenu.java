@@ -3,6 +3,8 @@ package imbacrian.betterwithgenders.gui;
 import imbacrian.betterwithgenders.api.GenderData;
 import imbacrian.betterwithgenders.api.Gender;
 import imbacrian.bapilib.render.PlayerDoll;
+import imbacrian.betterwithgenders.client.BwgClientProfile;
+import imbacrian.betterwithgenders.network.BwgPackets;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.render.renderer.GLRenderer;
 import net.minecraft.core.lang.I18n;
@@ -156,24 +158,24 @@ public class GuiJiggleMenu extends Screen {
 	}
 
 	private void sendJigglePacket(GenderData data) {
+		// Always remember the change globally, even in singleplayer.
+		BwgClientProfile.captureFrom(data);
+		// Physics only react to movement now.
+		data.bwg$getPhysics().kick(0.4F);
 		if (this.mc.getSendQueue() == null) return;
 
 		try {
-			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-			java.io.DataOutputStream dos = new java.io.DataOutputStream(baos);
-			dos.writeInt(this.mc.thePlayer.id);
-			dos.writeFloat(data.bwg$getJiggleDirection());
-			dos.writeFloat(data.bwg$getJiggleAmount());
-			dos.writeBoolean(data.bwg$isJiggleWithArmor());
-			dos.writeBoolean(data.bwg$isJiggleEnabled());
-			dos.writeBoolean(data.bwg$isIndividualPhysics());
-			dos.flush();
-			this.mc.getSendQueue().addToSendQueue(new PacketCustomPayload("BWG:Jiggle", baos.toByteArray()));
-			dos.close();
-			baos.close();
+			this.mc.getSendQueue().addToSendQueue(new PacketCustomPayload(BwgPackets.CHANNEL_JIGGLE,
+				BwgPackets.encodeJiggle(this.mc.thePlayer.id, data)));
 		} catch (java.io.IOException e) {
 			// ignore; best-effort
 		}
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		BwgClientProfile.saveIfDirty();
 	}
 
 	@Override

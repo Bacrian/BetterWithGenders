@@ -18,6 +18,7 @@
     "MobRendererBipedMixin",
     "MobRendererPlayerMixin",
     "PacketHandlerClientMixin",
+    "PlayerPhysicsTickMixin",
     "TileEntityRendererStatueMixin"
   ],
   "server": [

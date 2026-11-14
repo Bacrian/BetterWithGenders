@@ -1,6 +1,8 @@
 package imbacrian.betterwithgenders.gui;
 
 import imbacrian.bapilib.render.PlayerDoll;
+import imbacrian.betterwithgenders.client.BwgClientProfile;
+import imbacrian.betterwithgenders.network.BwgPackets;
 import imbacrian.betterwithgenders.api.Gender;
 import imbacrian.betterwithgenders.api.GenderData;
 import net.minecraft.client.gui.ButtonElement;
@@ -50,11 +52,15 @@ public class GuiGenderMenu extends Screen {
 		this.lastBreastValue = data.bwg$getBreastSize();
 
 		// Breast Separation Slider
+		// The slider works in 0..1, the stored value in SEPARATION_MIN..SEPARATION_MAX (same conversion as render()).
+		// Passing the raw value made the slider look reset every time the menu was reopened.
+		double separationNormalized = (data.bwg$getBreastSeparation() - SEPARATION_MIN) / (SEPARATION_MAX - SEPARATION_MIN);
+		separationNormalized = Math.max(0.0D, Math.min(1.0D, separationNormalized));
 		this.separationSlider = new SliderElement(2, this.guiLeft + 100, this.guiTop + 60, 130, 20,
-			I18n.getInstance().translateKey("gui.gender.separation.slider"), data.bwg$getBreastSeparation());
+			I18n.getInstance().translateKey("gui.gender.separation.slider"), (float) separationNormalized);
 		this.buttons.add(this.separationSlider);
 		this.separationSlider.enabled = data.bwg$getGender() != Gender.MALE && data.bwg$isIndividualPhysics();
-		this.lastSeparationValue = data.bwg$getBreastSeparation();
+		this.lastSeparationValue = this.separationSlider.sliderValue;
 
 		// Jiggle Physics Menu
 		this.buttons.add(new ButtonElement(3, this.guiLeft + 100, this.guiTop + 85, 130, 20,
@@ -71,14 +77,14 @@ public class GuiGenderMenu extends Screen {
 			GenderData player = (GenderData) this.mc.thePlayer;
 			Gender next = player.bwg$getGender().next();
 			player.bwg$setGender(next);
-			this.sendGenderPacket(next, player.bwg$getBreastSize(), player.bwg$getBreastSeparation(), player.bwg$getJiggleDirection());
+			this.sendGenderPacket();
 
 			ButtonElement genderButton = this.buttons.get(0);
 			genderButton.displayString = I18n.getInstance().translateKey("gui.gender.button")
 				+ ": " + I18n.getInstance().translateKey("gui.gender." + next.name().toLowerCase());
 
 			this.breastSlider.enabled = next != Gender.MALE;
-			this.separationSlider.enabled = next != Gender.MALE;
+			this.separationSlider.enabled = next != Gender.MALE && player.bwg$isIndividualPhysics();
 		} else if (button.id == 3) {
 		this.mc.displayScreen(new GuiJiggleMenu());
 		} else if (button.id == 4) {
@@ -105,34 +111,34 @@ public class GuiGenderMenu extends Screen {
 
 			data.bwg$setBreastSize((float) this.breastSlider.sliderValue);
 			this.lastBreastValue = this.breastSlider.sliderValue;
-			this.sendGenderPacket(data.bwg$getGender(), data.bwg$getBreastSize(), data.bwg$getBreastSeparation(), data.bwg$getJiggleDirection());
+			this.sendGenderPacket();
 		}
 
 		if (this.separationSlider.sliderValue != lastSeparationValue) {
 			float separation = (float) (SEPARATION_MIN + this.separationSlider.sliderValue * (SEPARATION_MAX - SEPARATION_MIN));
 			data.bwg$setBreastSeparation(separation);
 			this.lastSeparationValue = this.separationSlider.sliderValue;
-			this.sendGenderPacket(data.bwg$getGender(), data.bwg$getBreastSize(), data.bwg$getBreastSeparation(), data.bwg$getJiggleDirection());
+			this.sendGenderPacket();
 		}
 	}
 
-	private void sendGenderPacket(Gender gender, float breastSize, float breastSeparation, float jiggleDirection) {
+	private void sendGenderPacket() {
+		GenderData data = (GenderData) this.mc.thePlayer;
+		// Always remember the change globally, even in singleplayer (no send queue there).
+		BwgClientProfile.captureFrom(data);
 		if (this.mc.getSendQueue() == null) return;
 		try {
-			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-			java.io.DataOutputStream dos = new java.io.DataOutputStream(baos);
-			dos.writeInt(this.mc.thePlayer.id);
-			dos.writeUTF(gender.name());
-			dos.writeFloat(breastSize);
-			dos.writeFloat(breastSeparation);
-			dos.writeFloat(jiggleDirection);
-			dos.flush();
-			this.mc.getSendQueue().addToSendQueue(new PacketCustomPayload("BWG:Gender", baos.toByteArray()));
-			dos.close();
-			baos.close();
+			this.mc.getSendQueue().addToSendQueue(new PacketCustomPayload(BwgPackets.CHANNEL_GENDER,
+				BwgPackets.encodeGender(this.mc.thePlayer.id, data)));
 		} catch (java.io.IOException e) {
-			// ignore. Yup.
+			// best-effort
 		}
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		BwgClientProfile.saveIfDirty();
 	}
 
 	@Override

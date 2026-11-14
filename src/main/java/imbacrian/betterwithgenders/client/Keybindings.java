@@ -13,7 +13,14 @@ public class Keybindings {
 		new KeyBinding("key.bwgenders.opengui").setDefault(InputDevice.keyboard, Keyboard.KEY_G)
 	);
 
+	private static boolean debugKeyWasDown = false;
+
 	public static void checkKeys(Minecraft mc) {
+		/* For debugging
+		boolean debugKeyDown = Keyboard.isKeyDown(Keyboard.KEY_F8);
+		if (debugKeyDown && !debugKeyWasDown && mc.thePlayer != null) BwgDebug.next();
+		debugKeyWasDown = debugKeyDown; */
+
 		if (mc.thePlayer != null && genderGUI.isPressed()) {
 			if (mc.currentScreen == null) {
 				mc.displayScreen(new GuiGenderMenu());

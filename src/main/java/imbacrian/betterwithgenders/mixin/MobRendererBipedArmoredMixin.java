@@ -26,7 +26,7 @@ public abstract class MobRendererBipedArmoredMixin<T extends Mob & IArmorWearing
 		if (result == null) return;
 
 		if (entity instanceof GenderData data) {
-			MammaryModel.applyArmor(result, data, data.bwg$getLastWobble(), data.bwg$getLastImpactWobble(), data.bwg$getLastTurnWobble());
+			MammaryModel.applyArmor(result, data, partialTick);
 		} else if (entity instanceof CustomBodyData custom) {
 			MammaryModel.applyStatic(result, custom.bwg$hasCustomBust(), custom.bwg$getCustomBustSize(), "armorBreastLeft", "armorBreastRight");
 		}

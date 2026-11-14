@@ -1,5 +1,6 @@
 package imbacrian.betterwithgenders.mixin;
 
+import imbacrian.betterwithgenders.client.BwgClientProfile;
 import imbacrian.betterwithgenders.client.Keybindings;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,5 +14,6 @@ public class MinecraftMixin {
 	private void checkMyKeys(CallbackInfo ci) {
 		Minecraft minecraft = (Minecraft) (Object) this;
 		Keybindings.checkKeys(minecraft);
+		BwgClientProfile.tick(minecraft);
 	}
 }
